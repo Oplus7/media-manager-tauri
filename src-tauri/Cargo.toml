@@ -1,0 +1,35 @@
+[package]
+name = "media-manager-tauri"
+version = "0.3.0"
+description = "Portable Media Manager - A Tauri 2.0 App"
+authors = ["Oplus7"]
+edition = "2021"
+
+[lib]
+name = "media_manager_tauri_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset", "devtools"] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-log = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.32", features = ["bundled", "backup"] }
+uuid = { version = "1", features = ["v4"] }
+log = "0.4"
+walkdir = "2"
+base64 = "0.22"
+image = "0.25"
+regex = "1"
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "2"
+
+[dev-dependencies]
+tempfile = "3"

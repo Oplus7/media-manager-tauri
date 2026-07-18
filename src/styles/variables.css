@@ -1,0 +1,218 @@
+/* CSS Variables - Design System */
+/* Media Manager UI 设计规范 v2.0 */
+
+:root {
+  /* ============================================
+   * 暗色主题 (Dark Theme) - "深邃星夜"
+   * ============================================ */
+  
+  /* 背景色系 */
+  --bg-primary: #0f0f1a;       /* 主背景（最深层） */
+  --bg-secondary: #181828;     /* 次级背景（侧边栏/卡片背景） */
+  --bg-card: #1e1e32;          /* 卡片/内容块背景 */
+  --bg-elevated: #262642;      /* 悬浮/高亮元素背景 */
+  --bg-hover: #2e2e4a;         /* 交互状态背景 */
+  --bg-modal: #1a1a2e;         /* 弹窗/模态层背景 */
+  --bg-overlay: rgba(0, 0, 0, 0.7);  /* 遮罩背景 */
+  
+  /* 文字色系 */
+  --text-primary: #f0f0f5;     /* 主要文字 */
+  --text-secondary: #a0a0b8;   /* 次要文字 */
+  --text-muted: #6a6a82;       /* 弱化文字 */
+  --text-inverse: #1a1a2e;     /* 反色文字（浅色背景上的深色文字） */
+  
+  /* 强调色系 */
+  --accent: #7c5cff;           /* 主强调色（紫罗兰） */
+  --accent-hover: #8f71ff;     /* 强调色悬浮 */
+  --accent-dim: #3d3070;       /* 强调色弱化/背景 */
+  --accent-glow: rgba(124, 92, 255, 0.3);  /* 发光效果 */
+  
+  /* 边框色系 */
+  --border: #2a2a44;          /* 标准边框 */
+  --border-light: #3a3a58;    /* 浅边框 */
+  --border-focus: var(--accent);  /* 聚焦边框 */
+  
+  /* 状态色系 */
+  --success: #4ade80;         /* 成功状态 */
+  --success-dim: rgba(74, 222, 128, 0.15);
+  --warning: #fbbf24;          /* 警告状态 */
+  --warning-dim: rgba(251, 191, 36, 0.15);
+  --error: #f87171;            /* 错误状态 */
+  --error-dim: rgba(248, 113, 113, 0.15);
+  --info: #60a5fa;             /* 信息状态 */
+  --info-dim: rgba(96, 165, 250, 0.15);
+  
+  /* 媒体类型分类色 */
+  --media-comic: #ff7b54;      /* 漫画 - 珊瑚橙 */
+  --media-comic-dim: rgba(255, 123, 84, 0.2);
+  --media-audio: #54c6ff;      /* 音声 - 天蓝 */
+  --media-audio-dim: rgba(84, 198, 255, 0.2);
+  --media-video: #ff54b2;      /* 影视 - 玫红 */
+  --media-video-dim: rgba(255, 84, 178, 0.2);
+  
+  /* ============================================
+   * 间距系统
+   * ============================================ */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  
+  /* ============================================
+   * 圆角系统
+   * ============================================ */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* ============================================
+   * 阴影系统
+   * ============================================ */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.35);
+  
+  /* ============================================
+   * 过渡动画
+   * ============================================ */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* ============================================
+   * 字体系统
+   * ============================================ */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 24px;
+  
+  /* ============================================
+   * Z-Index 层级
+   * ============================================ */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 300;
+  --z-overlay: 400;
+  --z-toast: 500;
+  
+  /* ============================================
+   * 其他
+   * ============================================ */
+  --header-height: 64px;
+  --sidebar-width: 200px;
+  --card-min-width: 180px;
+  --card-height: 280px;
+  --modal-max-width: 800px;
+  --modal-max-height: 90vh;
+}
+
+/* ============================================
+ * 亮色主题 (Light Theme) - "清新晨光"
+ * ============================================ */
+[data-theme="light"] {
+  --bg-primary: #fafafa;
+  --bg-secondary: #f0f0f5;
+  --bg-card: #ffffff;
+  --bg-elevated: #f8f8fc;
+  --bg-hover: #f0f0f8;
+  --bg-modal: #ffffff;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  
+  --text-primary: #1a1a2e;
+  --text-secondary: #5a5a72;
+  --text-muted: #9090a8;
+  --text-inverse: #ffffff;
+  
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-dim: #e0e0fa;
+  --accent-glow: rgba(99, 102, 241, 0.15);
+  
+  --border: #e4e4ec;
+  --border-light: #ececf2;
+  
+  --success: #22c55e;
+  --success-dim: rgba(34, 197, 94, 0.1);
+  --warning: #f59e0b;
+  --warning-dim: rgba(245, 158, 11, 0.1);
+  --error: #ef4444;
+  --error-dim: rgba(239, 68, 68, 0.1);
+  --info: #3b82f6;
+  --info-dim: rgba(59, 130, 246, 0.1);
+  
+  --media-comic: #f97316;
+  --media-comic-dim: rgba(249, 115, 22, 0.15);
+  --media-audio: #0ea5e9;
+  --media-audio-dim: rgba(14, 165, 233, 0.15);
+  --media-video: #ec4899;
+  --media-video-dim: rgba(236, 72, 153, 0.15);
+  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================================
+ * 护眼主题 (Eye Care) - "温暖黄昏"
+ * ============================================ */
+[data-theme="eyecare"] {
+  --bg-primary: #1a1814;
+  --bg-secondary: #252220;
+  --bg-card: #2d2a26;
+  --bg-elevated: #3a3632;
+  --bg-hover: #454038;
+  --bg-modal: #2d2a26;
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+  
+  --text-primary: #f5f0e8;
+  --text-secondary: #c8c0b4;
+  --text-muted: #8a8078;
+  --text-inverse: #1a1814;
+  
+  --accent: #d4a574;
+  --accent-hover: #e4b584;
+  --accent-dim: #5a4a3a;
+  --accent-glow: rgba(212, 165, 116, 0.2);
+  
+  --border: #3d3a32;
+  --border-light: #4d4a42;
+  
+  --success: #6b9b5a;
+  --success-dim: rgba(107, 155, 90, 0.15);
+  --warning: #d4a574;
+  --warning-dim: rgba(212, 165, 116, 0.15);
+  --error: #c97365;
+  --error-dim: rgba(201, 115, 101, 0.15);
+  --info: #7a9bb5;
+  --info-dim: rgba(122, 155, 181, 0.15);
+  
+  --media-comic: #e8895a;
+  --media-comic-dim: rgba(232, 137, 90, 0.2);
+  --media-audio: #7ab5c9;
+  --media-audio-dim: rgba(122, 181, 201, 0.2);
+  --media-video: #c97ab5;
+  --media-video-dim: rgba(201, 122, 181, 0.2);
+  
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 6px 20px rgba(0, 0, 0, 0.4);
+}

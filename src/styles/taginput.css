@@ -1,0 +1,76 @@
+/* Tag Input Component Styles */
+.tag-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-input-wrapper {
+  position: relative;
+}
+
+.tag-input-wrapper input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background var(--transition-normal);
+}
+
+.suggestion-item:hover {
+  background: var(--bg-hover);
+}
+
+.similar-tags {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.similar-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.similar-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--accent-dim);
+  border-radius: 4px;
+  font-size: 12px;
+  margin-right: 6px;
+  cursor: pointer;
+}
+
+.similar-tag:hover {
+  background: var(--accent);
+}
