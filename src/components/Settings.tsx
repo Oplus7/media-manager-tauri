@@ -3,6 +3,7 @@ import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialo
 import { getSetting, setSetting } from '../api';
 import { getRagSettings, ragIndexMedia } from '../api/rag';
 import { exportLibraryToFile, importLibraryFromFile, queryLibrary } from '../api/library';
+import { getVersion } from '@tauri-apps/api/app';
 import { useTheme, applyBackgroundSettings } from '../hooks/useTheme';
 import '../styles/modal.css';
 
@@ -24,9 +25,10 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
   const [_saving, setSaving] = useState(false);
   const [dataMessage, setDataMessage] = useState<string | null>(null);
    const [ragEndpoint, setRagEndpoint] = useState('http://localhost:8100');
-  const [ragCollection, setRagCollection] = useState('media_library');
-  const [ragMessage, setRagMessage] = useState<string | null>(null);
-  const [bulkIndexing, setBulkIndexing] = useState(false);
+   const [ragCollection, setRagCollection] = useState('media_library');
+   const [ragMessage, setRagMessage] = useState<string | null>(null);
+   const [bulkIndexing, setBulkIndexing] = useState(false);
+   const [appVersion, setAppVersion] = useState('');
   const [activeSection, setActiveSection] = useState<SettingsSection>('appearance');
   const { schemes } = useTheme();
 
@@ -66,6 +68,7 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
       if (savedCoverTrans !== null) setCoverTransparent(savedCoverTrans !== 'false');
       if (savedRagEp) setRagEndpoint(savedRagEp);
       if (savedRagCol) setRagCollection(savedRagCol);
+      try { const v = await getVersion(); setAppVersion(v); } catch {}
     } catch (err) {
       console.error('Failed to load settings:', err);
     }
@@ -262,6 +265,7 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
     setRagMessage(null);
     let indexed = 0;
     let failed = 0;
+    let total = 0;
     try {
       let page = 1;
       const pageSize = 100;
@@ -276,6 +280,7 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
           page_size: pageSize,
         });
         const items = res.items || [];
+        if (page === 1) total = res.total;
         for (const item of items) {
           try {
             await ragIndexMedia({
@@ -292,11 +297,13 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
           } catch {
             failed++;
           }
+          const progress = total > 0 ? `(${Math.round((indexed + failed) / total * 100)}%)` : '';
+          setRagMessage(`${indexed + failed}/${total} ${progress}${failed > 0 ? ` 失败 ${failed}` : ''}`);
         }
         if (items.length < pageSize) break;
         page++;
       }
-      setRagMessage(`索引完成：成功 ${indexed} 项${failed > 0 ? `，失败 ${failed} 项` : ''}`);
+      setRagMessage(`索引完成：${indexed}/${total}${failed > 0 ? `，${failed} 项失败` : ''}`);
     } catch (err) {
       setRagMessage(`索引失败：${err}`);
     } finally {
@@ -669,7 +676,7 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
                   </div>
                   <div>
                     <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px' }}>版本</div>
-                    <div style={{ fontSize: '16px' }}>0.2.3</div>
+                     <div style={{ fontSize: '16px' }}>{appVersion || '...'}</div>
                   </div>
                   <div>
                     <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '4px' }}>技术栈</div>

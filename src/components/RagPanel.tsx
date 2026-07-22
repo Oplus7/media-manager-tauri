@@ -54,17 +54,22 @@ export default function RagPanel({ open, onClose, onOpenDetail }: RagPanelProps)
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal-content"
-        onClick={(e) => e.stopPropagation()}
-        style={{ width: '640px', maxWidth: '92vw' }}
-      >
+        <div className="modal-content rag-panel-content"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            width: '640px',
+            maxWidth: '92vw',
+            maxHeight: '80vh',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
         <div className="modal-header">
           <h2>知识库问答</h2>
           <button className="btn-close" onClick={onClose}>×</button>
         </div>
-        <div className="rag-panel-body" style={{ padding: '16px' }}>
-          <div className="rag-query-row" style={{ display: 'flex', gap: '8px' }}>
+        <div className="rag-panel-body" style={{ padding: '16px', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div className="rag-query-row" style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
             <input
               type="text"
               className="rag-query-input"
@@ -82,12 +87,12 @@ export default function RagPanel({ open, onClose, onOpenDetail }: RagPanelProps)
           </div>
 
           {error && (
-            <div style={{ color: 'var(--error)', marginTop: '12px', fontSize: '14px' }}>{error}</div>
+            <div style={{ color: 'var(--error)', marginTop: '12px', fontSize: '14px', flexShrink: 0 }}>{error}</div>
           )}
 
           <div
             className="rag-results"
-            style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}
+            style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, overflowY: 'auto', paddingRight: '4px' }}
           >
             {sources.length === 0 && !loading && !error && (
               <div style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
@@ -111,10 +116,21 @@ export default function RagPanel({ open, onClose, onOpenDetail }: RagPanelProps)
                     {s.media_name || s.source_file}
                   </span>
                   {s.media_id && (
-                    <button className="btn btn-sm btn-secondary" onClick={() => onOpenDetail(s.media_id)}>
-                      来源
-                    </button>
-                  )}
+                     <button
+                       className="btn btn-sm"
+                       onClick={() => onOpenDetail(s.media_id)}
+                       style={{
+                         color: '#fff',
+                         background: 'var(--accent)',
+                         border: 'none',
+                         fontWeight: 600,
+                         padding: '4px 14px',
+                         fontSize: '12px',
+                       }}
+                     >
+                       → 来源
+                     </button>
+                   )}
                 </div>
               </div>
             ))}
