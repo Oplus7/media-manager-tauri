@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import { getItemDetail, updateItem, getItemTags, addTagToItem, removeTagFromItem, readImageAsBase64, searchTags, extractVideoThumbnail } from '../api';
 import { useDeleteItem } from '../hooks/useQueryHooks';
+import { ragIndexMedia, ragDeleteMedia } from '../api/rag';
 import { useDebounce } from '../hooks';
 import type { MediaItem, Tag } from '../types';
 import '../styles/modal.css';
@@ -44,6 +45,9 @@ export default function DetailModal({
   const [editMediaType, setEditMediaType] = useState<string>('comic');
   
   const [loading, setLoading] = useState(false);
+  const [ragBusy, setRagBusy] = useState(false);
+  const [ragMsg, setRagMsg] = useState<string | null>(null);
+  const ragMsgColor = ragMsg && (ragMsg.includes('失败') || ragMsg.includes('无法连接')) ? 'var(--error)' : 'var(--success)';
   const deleteMutation = useDeleteItem();
 
   const tagInputRef = useRef<HTMLInputElement>(null);
@@ -124,6 +128,19 @@ export default function DetailModal({
       });
       setEditMode(false);
       onUpdated();
+      try {
+        await ragIndexMedia({
+          media_id: item.id,
+          name: item.name,
+          media_type: item.media_type,
+          author: item.author || '',
+          description: item.description || '',
+          tags: item.tags?.map((t) => t.name) || [],
+          path: item.path,
+        });
+      } catch {
+        // RAG unreachable: non-blocking
+      }
       loadItem();
     } catch (err) {
       console.error('Failed to update item:', err);
@@ -137,12 +154,39 @@ export default function DetailModal({
     setLoading(true);
     try {
       await deleteMutation.mutateAsync(item.id);
+      try {
+        await ragDeleteMedia(item.id);
+      } catch {
+        // RAG unreachable: non-blocking, the delete succeeded
+      }
       onDeleted();
       onClose();
     } catch (err) {
       console.error('Failed to delete item:', err);
     }
     setLoading(false);
+  };
+
+  const handleIndexToRag = async () => {
+    if (!item) return;
+    setRagBusy(true);
+    setRagMsg(null);
+    try {
+      await ragIndexMedia({
+        media_id: item.id,
+        name: item.name,
+        media_type: item.media_type,
+        author: item.author || '',
+        description: item.description || '',
+        tags: item.tags?.map((t) => t.name) || [],
+        path: item.path,
+      });
+      setRagMsg('已索引入知识库');
+    } catch {
+      setRagMsg('索引入知识库失败，请检查 RAG 服务连接');
+    } finally {
+      setRagBusy(false);
+    }
   };
 
   const handleAddTag = async (tagName?: string) => {
@@ -538,6 +582,16 @@ export default function DetailModal({
               </svg>
               {editMode ? '取消' : '编辑'}
             </button>
+            <button
+              className="action-btn action-btn-secondary"
+              onClick={handleIndexToRag}
+              disabled={ragBusy}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="4 4 20 12 4 20 4 4" />
+              </svg>
+               {ragBusy ? '索引中...' : '加入知识库'}
+            </button>
             <button className="action-btn action-btn-secondary" onClick={handleOpenFolder}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
@@ -563,6 +617,11 @@ export default function DetailModal({
               </svg>
               删除
             </button>
+          </div>
+        )}
+        {ragMsg && (
+          <div style={{ color: ragMsgColor, marginTop: '8px', fontSize: '13px' }}>
+            {ragMsg}
           </div>
         )}
       </div>

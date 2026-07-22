@@ -9,6 +9,7 @@ import '../styles/library.css';
 interface LibraryProps {
   onImportClick: () => void;
   onSettingsClick: () => void;
+  onRagPanelOpen: () => void;
   onItemClick: (id: string) => void;
   onPlay: (item: MediaItem) => void;
   refreshTrigger: number;
@@ -91,6 +92,7 @@ const MemoizedCard = memo(function MemoizedCard({ item, coverUrl, onItemClick, o
 export default function Library({
   onImportClick,
   onSettingsClick,
+  onRagPanelOpen,
   onItemClick,
   onPlay,
   refreshTrigger,
@@ -328,6 +330,13 @@ export default function Library({
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
             导入
+          </button>
+          <button className="btn btn-secondary" onClick={onRagPanelOpen}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            知识库
           </button>
           <button className="btn btn-secondary" onClick={onSettingsClick}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">

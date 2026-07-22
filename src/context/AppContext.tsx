@@ -23,6 +23,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [saveDataDirOpen, setSaveDataDirOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [ragPanelOpen, setRagPanelOpen] = useState(false);
 
   const openImportDialog = useCallback((paths: string[]) => {
     setImportDialog({ open: true, paths });
@@ -48,6 +49,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setSettingsOpen(false);
   }, []);
 
+  const openRagPanel = useCallback(() => {
+    setRagPanelOpen(true);
+  }, []);
+
+  const closeRagPanel = useCallback(() => {
+    setRagPanelOpen(false);
+  }, []);
+
   const triggerRefresh = useCallback(() => {
     setRefreshTrigger((n) => n + 1);
   }, []);
@@ -66,6 +75,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     detailModal,
     settingsOpen,
     saveDataDirOpen,
+    ragPanelOpen,
     refreshTrigger,
     // Actions
     openImportDialog,
@@ -74,6 +84,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     closeDetailModal,
     openSettings,
     closeSettings,
+    openRagPanel,
+    closeRagPanel,
     triggerRefresh,
     openSaveDataDirDialog,
     closeSaveDataDirDialog,

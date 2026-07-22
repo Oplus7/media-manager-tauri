@@ -14,6 +14,7 @@ import ComicReader from './components/ComicReader';
 import AudioPlayer from './components/AudioPlayer';
 import VideoPlayer from './components/VideoPlayer';
 import Settings from './components/Settings';
+import RagPanel from './components/RagPanel';
 import SaveDataDirDialog from './components/SaveDataDirDialog';
 import type { MediaItem, PlayMode } from './types';
 
@@ -36,6 +37,9 @@ function AppContent() {
     closeDetailModal,
     openSettings,
     closeSettings,
+    ragPanelOpen,
+    openRagPanel,
+    closeRagPanel,
     triggerRefresh,
     openSaveDataDirDialog,
     closeSaveDataDirDialog
@@ -179,6 +183,7 @@ function AppContent() {
         <Library
           onImportClick={handleImportClick}
           onSettingsClick={openSettings}
+          onRagPanelOpen={openRagPanel}
           onItemClick={handleItemClick}
           onPlay={handlePlay}
           refreshTrigger={refreshTrigger}
@@ -189,6 +194,15 @@ function AppContent() {
           onClose={closeImportDialog}
           onImported={handleImported}
           initialPaths={importDialog.paths}
+        />
+
+        <RagPanel
+          open={ragPanelOpen}
+          onClose={closeRagPanel}
+          onOpenDetail={(mediaId) => {
+            closeRagPanel();
+            openDetailModal(mediaId);
+          }}
         />
 
         <DetailModal

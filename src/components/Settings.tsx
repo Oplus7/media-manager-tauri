@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialog';
 import { getSetting, setSetting } from '../api';
-import { exportLibraryToFile, importLibraryFromFile } from '../api/library';
+import { getRagSettings, ragIndexMedia } from '../api/rag';
+import { exportLibraryToFile, importLibraryFromFile, queryLibrary } from '../api/library';
 import { useTheme, applyBackgroundSettings } from '../hooks/useTheme';
 import '../styles/modal.css';
 
-type SettingsSection = 'appearance' | 'playback' | 'data' | 'about';
+type SettingsSection = 'appearance' | 'playback' | 'data' | 'rag' | 'about';
 
 interface SettingsProps {
   open: boolean;
@@ -22,6 +23,10 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
   const [coverTransparent, setCoverTransparent] = useState(true);
   const [_saving, setSaving] = useState(false);
   const [dataMessage, setDataMessage] = useState<string | null>(null);
+   const [ragEndpoint, setRagEndpoint] = useState('http://localhost:8100');
+  const [ragCollection, setRagCollection] = useState('media_library');
+  const [ragMessage, setRagMessage] = useState<string | null>(null);
+  const [bulkIndexing, setBulkIndexing] = useState(false);
   const [activeSection, setActiveSection] = useState<SettingsSection>('appearance');
   const { schemes } = useTheme();
 
@@ -30,6 +35,7 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
     appearance: null,
     playback: null,
     data: null,
+    rag: null,
     about: null,
   });
 
@@ -42,13 +48,15 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
 
   const loadSettings = async () => {
     try {
-      const [savedScheme, savedPlayMode, savedBg, savedBgMode, savedBlur, savedCoverTrans] = await Promise.all([
+      const [savedScheme, savedPlayMode, savedBg, savedBgMode, savedBlur, savedCoverTrans, savedRagEp, savedRagCol] = await Promise.all([
         getSetting('color_scheme'),
         getSetting('play_mode'),
         getSetting('custom_bg'),
         getSetting('bg_mode'),
         getSetting('blur_level'),
         getSetting('cover_transparent'),
+        getSetting('rag_endpoint'),
+        getSetting('rag_collection'),
       ]);
       if (savedScheme) setColorScheme(savedScheme);
       if (savedPlayMode) setPlayMode(savedPlayMode as 'builtin' | 'system');
@@ -56,6 +64,8 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
       if (savedBgMode === 'full' || savedBgMode === 'library') setBgMode(savedBgMode);
       if (savedBlur) setBlurLevel(parseInt(savedBlur, 10));
       if (savedCoverTrans !== null) setCoverTransparent(savedCoverTrans !== 'false');
+      if (savedRagEp) setRagEndpoint(savedRagEp);
+      if (savedRagCol) setRagCollection(savedRagCol);
     } catch (err) {
       console.error('Failed to load settings:', err);
     }
@@ -95,7 +105,7 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
         const containerRect = container.getBoundingClientRect();
         const containerTop = containerRect.top + 80;
 
-        const sections: SettingsSection[] = ['appearance', 'playback', 'data', 'about'];
+        const sections: SettingsSection[] = ['appearance', 'playback', 'data', 'rag', 'about'];
         let active: SettingsSection = 'appearance';
         let minDistance = Infinity;
 
@@ -221,6 +231,79 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
     }
   };
 
+  const handleSaveRagSettings = async () => {
+    setRagMessage(null);
+    try {
+      await setSetting('rag_endpoint', ragEndpoint);
+      await setSetting('rag_collection', ragCollection);
+      setRagMessage('RAG 设置已保存');
+    } catch (err) {
+      setRagMessage(`保存失败：${err}`);
+    }
+  };
+
+  const handleTestRagConnection = async () => {
+    setRagMessage(null);
+    try {
+      const { rag_endpoint } = await getRagSettings();
+      const res = await fetch(`${rag_endpoint}/api/health`);
+      if (res.ok) {
+        setRagMessage('RAG 服务连接正常');
+      } else {
+        setRagMessage(`RAG 服务无法连接：${res.status}`);
+      }
+    } catch {
+      setRagMessage('无法连接到 RAG 服务');
+    }
+  };
+
+  const handleIndexAll = async () => {
+    setBulkIndexing(true);
+    setRagMessage(null);
+    let indexed = 0;
+    let failed = 0;
+    try {
+      let page = 1;
+      const pageSize = 100;
+      while (true) {
+        const res = await queryLibrary({
+          category: 'all',
+          sub_filter: null,
+          search: null,
+          tag_ids: null,
+          tag_mode: 'or',
+          page,
+          page_size: pageSize,
+        });
+        const items = res.items || [];
+        for (const item of items) {
+          try {
+            await ragIndexMedia({
+              media_id: item.id,
+              name: item.name,
+              media_type: item.media_type,
+              author: item.author || '',
+              description: item.description || '',
+              notes: item.notes || '',
+              tags: item.tags?.map((t) => t.name) || [],
+              path: item.path,
+            });
+            indexed++;
+          } catch {
+            failed++;
+          }
+        }
+        if (items.length < pageSize) break;
+        page++;
+      }
+      setRagMessage(`索引完成：成功 ${indexed} 项${failed > 0 ? `，失败 ${failed} 项` : ''}`);
+    } catch (err) {
+      setRagMessage(`索引失败：${err}`);
+    } finally {
+      setBulkIndexing(false);
+    }
+  };
+
   const handleImportData = async () => {
     setDataMessage(null);
     try {
@@ -286,10 +369,20 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
                 </svg>
                 数据
               </button>
-              <button
-                className={`settings-nav-item ${activeSection === 'about' ? 'active' : ''}`}
-                onClick={() => handleNavClick('about')}
-              >
+               <button
+                 className={`settings-nav-item ${activeSection === 'rag' ? 'active' : ''}`}
+                 onClick={() => handleNavClick('rag')}
+               >
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                   <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                 </svg>
+                 RAG
+               </button>
+               <button
+                 className={`settings-nav-item ${activeSection === 'about' ? 'active' : ''}`}
+                 onClick={() => handleNavClick('about')}
+               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" y1="16" x2="12" y2="12" />
@@ -506,6 +599,60 @@ export default function Settings({ open, onClose, onThemeChange }: SettingsProps
                     导出数据
                   </button>
                 </div>
+              </div>
+
+               {/* RAG 知识库 */}
+               <div
+                 ref={(el) => { sectionRefs.current.rag = el; }}
+                className="settings-panel"
+              >
+                <h3 className="settings-panel-title">RAG 知识库</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '12px' }}>
+                  配置 local-rag 服务地址与集合名，可将媒体库元数据索引入知识库，并在「知识库」面板中检索。
+                </p>
+                <div className="data-section">
+                  <div className="data-section-title">服务地址</div>
+                  <input
+                    type="text"
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-input)', color: 'var(--text)' }}
+                    value={ragEndpoint}
+                    onChange={(e) => setRagEndpoint(e.target.value)}
+                     placeholder="http://localhost:8100"
+                  />
+                </div>
+                <div className="data-section">
+                  <div className="data-section-title">集合名称</div>
+                  <input
+                    type="text"
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-input)', color: 'var(--text)' }}
+                    value={ragCollection}
+                    onChange={(e) => setRagCollection(e.target.value)}
+                    placeholder="media_library"
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                  <button className="btn btn-secondary" onClick={handleTestRagConnection}>
+                    测试连接
+                  </button>
+                  <button className="btn btn-primary" onClick={handleSaveRagSettings}>
+                    保存设置
+                  </button>
+                  <button className="btn btn-secondary" onClick={handleIndexAll} disabled={bulkIndexing}>
+                    {bulkIndexing ? '索引中...' : '索引全部媒体库'}
+                  </button>
+                </div>
+                {ragMessage && (
+                  <div style={{
+                    padding: '8px 12px',
+                    marginTop: '12px',
+                    background: 'var(--bg-hover)',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: '14px',
+                    color: ragMessage.includes('失败') || ragMessage.includes('无法连接') ? 'var(--error)' : 'var(--success)',
+                  }}>
+                    {ragMessage}
+                  </div>
+                )}
               </div>
 
               {/* 关于 */}

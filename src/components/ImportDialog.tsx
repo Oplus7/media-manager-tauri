@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import { importPaths, readImageAsBase64, extractVideoThumbnail } from '../api/media';
+import { ragIndexMedia } from '../api/rag';
 import { searchTags } from '../api/tags';
 import { useConfirmImport } from '../hooks/useQueryHooks';
 import { useDebounce } from '../hooks';
@@ -161,7 +162,20 @@ export default function ImportDialog({
           author: authorInput[i] || null,
           description: descriptionInput[i] || null,
         };
-        await confirmImportMutation.mutateAsync({ candidate: candidateWithCustomCover, tagNames: tags });
+        const savedItem = await confirmImportMutation.mutateAsync({ candidate: candidateWithCustomCover, tagNames: tags });
+        try {
+          await ragIndexMedia({
+            media_id: savedItem.id,
+            name: savedItem.name,
+            media_type: savedItem.media_type,
+            author: savedItem.author || '',
+            description: savedItem.description || '',
+            tags: tags,
+            path: savedItem.path,
+          });
+        } catch {
+          // RAG unreachable: skip, non-blocking
+        }
       }
       onImported();
       onClose();

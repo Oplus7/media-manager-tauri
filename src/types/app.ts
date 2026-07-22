@@ -55,6 +55,7 @@ export interface AppUIState {
   settingsOpen: boolean;
   saveDataDirOpen: boolean;
   refreshTrigger: number;
+  ragPanelOpen: boolean;
 }
 
 // App actions
@@ -65,6 +66,8 @@ export interface AppActions {
   closeDetailModal: () => void;
   openSettings: () => void;
   closeSettings: () => void;
+  openRagPanel: () => void;
+  closeRagPanel: () => void;
   triggerRefresh: () => void;
   openSaveDataDirDialog: () => void;
   closeSaveDataDirDialog: () => void;
