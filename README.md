@@ -9,8 +9,8 @@
 
 A portable, offline media library manager built with Tauri 2.0. Import, organize, tag, and play your local media collection — all in one lightweight desktop app.
 
-> **AI 接入计划**：后续将逐步接入多模态 LLM 实现智能标签、语义搜索、语音控制等功能。待实装后会更新对应说明。
-> **AI on the way**: multimodal LLM integration (smart tagging, semantic search, voice control) is planned. Docs will be updated once implemented.
+> **v0.4.0 已接入 AI 知识库**：支持语义搜索、导入即入库、批量索引，通过 [local-rag](https://github.com/Oplus7/local-rag) 实现自然语言检索你的媒体库。详见下方"AI 知识库"章节。
+> **v0.4.0**: AI-powered semantic search is here. Auto-index on import, natural language media search via [local-rag](https://github.com/Oplus7/local-rag). See "AI Knowledge Base" below.
 
 ---
 
@@ -30,6 +30,7 @@ A portable, offline media library manager built with Tauri 2.0. Import, organize
 | 导入导出 Import/Export | 完整 JSON 格式的媒体库导入与导出 |
 | 自动备份 Auto Backup | SQLite 数据库每 30 秒自动备份，WAL 模式 |
 | 便携部署 Portable | 单文件可执行，数据存于程序所在目录 |
+| AI 知识库 AI Knowledge Base | 接入 local-rag，语义搜索/导入即索引/全量批量入库 |
 
 ## 截图 / Screenshots
 
@@ -80,7 +81,27 @@ pnpm tauri build
 - 音频：自动识别目录内多个音频文件组成连续播放列表
 - 视频：自带完整播放控件，多集作品支持选集切换
 
-### 标签与系列 / Tags & Series
+### AI 知识库 / AI Knowledge Base
+
+> **前提**：需要同时运行 [local-rag](https://github.com/Oplus7/local-rag) 服务（默认 `http://localhost:8100`），配置 Ollama 或阿里云百炼 API。
+
+- **配置**：设置 → RAG → 输入服务端点与集合名称，点击「保存并测试连接」
+- **批量索引**：点击「索引全部媒体库」一次入库所有存量媒体，支持分页进度显示
+- **单条索引**：详情页点击「加入知识库」按钮，将该媒体元数据送入向量库
+- **自动索引**：导入新媒体时自动入库，无需手动操作
+- **语义搜索**：工具栏「知识库」按钮 → 输入自然语言问题 → 检索相关媒体
+- **来源回链**：搜索结果中点击「→ 来源」按钮直接跳转对应媒体详情
+- **删除同步**：删除媒体时自动清除知识库中对应的向量索引
+
+> **Prerequisite**: [local-rag](https://github.com/Oplus7/local-rag) must be running (default `http://localhost:8100`), configured with Ollama or compatible API.
+>
+> - **Setup**: Settings → RAG → enter endpoint & collection name → test connection
+> - **Bulk Index**: "Index Entire Library" ingests all existing media, with pagination progress
+> - **Single Index**: "Add to KB" button on media detail page
+> - **Auto Index**: Newly imported media is automatically indexed
+> - **Semantic Search**: Toolbar "KB" button → ask natural language questions → relevant results
+> - **Source Link**: Click "→ Source" button on any result to jump to that media's detail page
+> - **Delete Sync**: Removing a media item also cleans its vector index automatically
 
 - 点击卡片进入详情页，可添加/删除标签
 - 标签输入支持自动补全（根据已有标签匹配）
@@ -152,7 +173,7 @@ FFmpeg is distributed separately under GPL: https://ffmpeg.org/download.html
 ```
 media-manager-tauri/
 ├── src/                    # React 前端
-│   ├── components/         # UI 组件（Library/Players/Settings/Import/Detail）
+│   ├── components/         # UI 组件（Library/Players/Settings/Import/Detail/RagPanel）
 │   │   ├── common/         # 共用基础组件
 │   │   ├── library/        # 媒体库网格/筛选/搜索
 │   │   ├── player/         # 播放器组件
@@ -183,7 +204,7 @@ media-manager-tauri/
 pnpm tauri build
 
 # 输出位置
-# src-tauri/target/release/bundle/nsis/MediaManager_0.3.0_x64-setup.exe
+# src-tauri/target/release/bundle/nsis/MediaManager_0.4.0_x64-setup.exe
 ```
 
 安装包默认安装到当前用户目录，所有数据（SQLite 数据库、缩略图、配置）存储在用户选择的数据目录中。如需纯便携版（zip 压缩包解压即用），修改 `src-tauri/tauri.conf.json`：
