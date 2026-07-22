@@ -83,25 +83,32 @@ pnpm tauri build
 
 ### AI 知识库 / AI Knowledge Base
 
-> **前提**：需要同时运行 [local-rag](https://github.com/Oplus7/local-rag) 服务（默认 `http://localhost:8100`），配置 Ollama 或阿里云百炼 API。
-
-- **配置**：设置 → RAG → 输入服务端点与集合名称，点击「保存并测试连接」
-- **批量索引**：点击「索引全部媒体库」一次入库所有存量媒体，支持分页进度显示
-- **单条索引**：详情页点击「加入知识库」按钮，将该媒体元数据送入向量库
-- **自动索引**：导入新媒体时自动入库，无需手动操作
-- **语义搜索**：工具栏「知识库」按钮 → 输入自然语言问题 → 检索相关媒体
-- **来源回链**：搜索结果中点击「→ 来源」按钮直接跳转对应媒体详情
-- **删除同步**：删除媒体时自动清除知识库中对应的向量索引
-
-> **Prerequisite**: [local-rag](https://github.com/Oplus7/local-rag) must be running (default `http://localhost:8100`), configured with Ollama or compatible API.
+> **架构说明**：Media Manager 本身不嵌入 AI 引擎。所有 RAG 功能由独立的 [local-rag](https://github.com/Oplus7/local-rag) 服务通过 HTTP 提供。
 >
-> - **Setup**: Settings → RAG → enter endpoint & collection name → test connection
-> - **Bulk Index**: "Index Entire Library" ingests all existing media, with pagination progress
-> - **Single Index**: "Add to KB" button on media detail page
-> - **Auto Index**: Newly imported media is automatically indexed
-> - **Semantic Search**: Toolbar "KB" button → ask natural language questions → relevant results
-> - **Source Link**: Click "→ Source" button on any result to jump to that media's detail page
-> - **Delete Sync**: Removing a media item also cleans its vector index automatically
+> ```
+> Media Manager ──HTTP──→ local-rag (port 8100) ──→ Ollama / 阿里云百炼 API
+> ```
+>
+> **你需要先安装并运行 local-rag。** 详细步骤见 [local-rag](https://github.com/Oplus7/local-rag) 仓库。两种 AI 后端可选：
+> - **方式一：本地 Ollama**（离线免费，需 GPU）：`ollama pull qwen3:8b bge-m3` → 启动 local-rag
+> - **方式二：云端 API**（无需 GPU，需 API Key）：编辑 `.env` 填入阿里云百炼或任意 OpenAI 兼容端点
+
+- **配置**：设置 → RAG → 服务端点填 `http://localhost:8100` → 保存并测试连接
+- **批量索引**：点击「索引全部媒体库」一次入库所有存量媒体，分页进度 X/N 实时显示
+- **单条索引**：详情页点击「加入知识库」按钮，将该媒体元数据送入向量库（幂等写入）
+- **自动索引**：导入新媒体时自动入库，无需手动操作
+- **语义搜索**：工具栏「知识库」按钮 → 输入自然语言问题 → 检索匹配媒体 → 点击「→ 来源」跳转详情
+- **删除同步**：删除媒体时自动清除知识库对应向量，不留鬼影
+
+> **Architecture**: Media Manager does NOT bundle any AI engine. All RAG features are provided by the standalone [local-rag](https://github.com/Oplus7/local-rag) service over HTTP REST API:
+>
+> ```
+> Media Manager ──HTTP──→ local-rag (port 8100) ──→ Ollama / Alibaba Cloud Bailian
+> ```
+>
+> **You must install and run local-rag separately.** See [local-rag](https://github.com/Oplus7/local-rag) for setup instructions. Two AI backend options:
+> - **Option 1 — Local Ollama** (offline, free, needs GPU): `ollama pull qwen3:8b bge-m3` then start local-rag
+> - **Option 2 — Cloud API** (no local GPU, needs API key): configure `.env` with Aliyun Bailian or any OpenAI-compatible endpoint
 
 - 点击卡片进入详情页，可添加/删除标签
 - 标签输入支持自动补全（根据已有标签匹配）
@@ -120,6 +127,7 @@ pnpm tauri build
 - 可通过"设置 → 数据 → 导出"将整个媒体库导出为 JSON 文件
 - 换电脑或重装后，通过"设置 → 数据 → 导入"恢复
 - JSON 导入会自动合并标签和系列数据
+- **所有数据（数据库、封面、缩略图、配置）存放在 `SaveData/` 目录下，安装版与便携版通用。** 安装新版不会覆盖已有数据；可将旧版 SaveData 目录直接复制到新版程序所在目录，即可载入全部媒体库。
 
 ### 便携版使用 / Portable Mode
 
