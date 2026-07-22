@@ -820,10 +820,10 @@ pub fn export_library_to_file(state: State<AppState>, file_path: String) -> Resu
             rows.filter_map(|r| r.ok()).collect()
         };
         let series: Vec<serde_json::Value> = {
-            let mut stmt = db.prepare("SELECT id, name, description, media_type, created_at FROM series")?;
+            let mut stmt = db.prepare("SELECT id, name, description, author, created_at FROM series")?;
             let rows = stmt.query_map([], |row| Ok(serde_json::json!({
                 "id": row.get::<_, String>(0)?, "name": row.get::<_, String>(1)?,
-                "description": row.get::<_, Option<String>>(2)?, "media_type": row.get::<_, String>(3)?,
+                "description": row.get::<_, Option<String>>(2)?, "author": row.get::<_, Option<String>>(3)?,
                 "created_at": row.get::<_, String>(4)?,
             })))?;
             rows.filter_map(|r| r.ok()).collect()
@@ -941,7 +941,7 @@ pub fn import_library(json_data: String, state: State<AppState>) -> Result<Strin
             let id = s["id"].as_str().unwrap_or("");
             let name = s["name"].as_str().unwrap_or("");
             let description = s["description"].as_str();
-            let media_type = s["media_type"].as_str().unwrap_or("comic");
+            let author = s["author"].as_str();
             let created_at = s["created_at"].as_str().unwrap_or("");
 
             let existing: Option<String> = tx.query_row(
@@ -950,8 +950,8 @@ pub fn import_library(json_data: String, state: State<AppState>) -> Result<Strin
             if existing.is_some() { continue; }
 
             tx.execute(
-                "INSERT OR IGNORE INTO series (id, name, description, media_type, created_at) VALUES (?, ?, ?, ?, ?)",
-                params![id, name, description, media_type, created_at],
+                "INSERT OR IGNORE INTO series (id, name, description, author, created_at) VALUES (?, ?, ?, ?, ?)",
+                params![id, name, description, author, created_at],
             )?;
             imported_series += 1;
         }
